@@ -43,7 +43,6 @@ def Straight_Flush(cards):
             and (sorted_set[2] + 1 == sorted_set[3]) and (sorted_set[3] + 1 == sorted_set[4]):
         return True
     return False
-#print(Straight_Flush(['C2', 'C3', 'C4', 'C6', 'C5']))
 
 #this function figures out if any players have four of a kind
 def four_of_a_kind(cards):
@@ -56,7 +55,6 @@ def four_of_a_kind(cards):
     elif sorted_values[1] == sorted_values[2] and sorted_values[2] == sorted_values[3] and sorted_values[3] == sorted_values[4]:
         return True
     return False
-#print(four_of_a_kind(['C2', 'D2', 'H2', 'S2', 'C3']))
 
 #this function figures out if any players have three of a kind
 def three_of_a_kind(cards):
@@ -85,7 +83,7 @@ def full_house(cards):
 def Straight(cards):
     values_list = []
     for i in cards:
-        values_list.append(int(i[1]))
+        values_list.append(int(i[1:]))
     values_list = sorted(values_list)
     if (values_list[0] + 1 == values_list[1]) and (values_list[1] + 1 == values_list[2]) and\
             (values_list[2] + 1 == values_list[3]) and (values_list[3] + 1 == values_list[4]): return True
