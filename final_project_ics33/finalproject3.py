@@ -155,7 +155,7 @@ class Game:
             elif full_house(i[3:7]) == True: i[2] = 3
             elif Flush(i[3:7]) == True: i[2] = 4
             elif Straight(i[3:7]) == True: i[2] = 5
-            elif three_of_a_kind(i[3:]) == True: i[2] = 6
+            elif three_of_a_kind(i[3:7]) == True: i[2] = 6
             elif two_pairs(i[3:7]) == True: i[2] = 7
             elif pairs(i[3:7]) == True: i[2] = 8
             elif highcard(i[3:7]) == True: i[2] = 9
