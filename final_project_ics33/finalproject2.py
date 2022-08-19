@@ -297,9 +297,9 @@ def checking_button(g, button_frame, root, bet_amount=0):
     global community_card_image2
     global community_card_image3
 
-    community_card_image1 = resize_cards(f'card_deck/{g.c1}.png')
-    community_card_image2 = resize_cards(f'card_deck/{g.c2}.png')
-    community_card_image3 = resize_cards(f'card_deck/{g.c3}.png')
+    community_card_image1 = resize_cards(f'final_project_ics33/card_deck/{g.c1}.png')
+    community_card_image2 = resize_cards(f'final_project_ics33/card_deck/{g.c2}.png')
+    community_card_image3 = resize_cards(f'final_project_ics33/card_deck/{g.c3}.png')
     community_card_1.config(image=community_card_image1)
     community_card_2.config(image=community_card_image2)
     community_card_3.config(image=community_card_image3)
@@ -360,8 +360,8 @@ def player_setup(numb, root, title1, player_amount, player_amount_button):
 
     global player_image
     global player_image2
-    player_image = resize_cards(f'card_deck/{g.user[3]}.png')
-    player_image2 = resize_cards(f'card_deck/{g.user[4]}.png')
+    player_image = resize_cards(f'final_project_ics33/card_deck/{g.user[3]}.png')
+    player_image2 = resize_cards(f'final_project_ics33/card_deck/{g.user[4]}.png')
     card_1.config(image=player_image)
     card_2.config(image=player_image2)
 
