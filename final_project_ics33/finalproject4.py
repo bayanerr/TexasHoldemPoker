@@ -186,8 +186,8 @@ class Game:
             bot_bet = 1
             bot_max = int(i[1])
             
-            small = bot_max // 3
-            med = bot_max // 2
+            small = int(bot_max / 3)
+            med = int(bot_max / 2)
             large = bot_max - 2
 
             if user_bet >= 5:
@@ -225,9 +225,10 @@ class Game:
 
             bot_max = int(i[1])
             
-            small = bot_max // 3
-            med = bot_max // 2
-            large = bot_max - 2
+            small = int(bot_max / 3) + 1
+            med = int(bot_max / 2)
+            large = bot_max - 1
+
 
             self.string = self.string + ("Player" + str(i[0]) + ": ")
             if i[2] >= 9:
