@@ -178,12 +178,28 @@ class Game:
             if keys == 0:
                 self.user[1] = values
 
-    def starting_bids(self):
+    def starting_bids(self, user_bet):
         self.starting_bids_string = 'Computer Player Initial Bids:\n\n'
         for i in self.players:
-            self.starting_bids_string = self.starting_bids_string + "player" + str(i[0]) + ": "
-            i[1] = i[1] - 1
-            self.starting_bids_string = self.starting_bids_string + "amount bet: 1$, money left: " + str(i[1]) + "$\n"
+            self.starting_bids_string = self.starting_bids_string + "Player " + str(i[0]) + ": "
+
+            bot_bet = 1
+            bot_max = int(i[1])
+            
+            small = bot_max // 3
+            med = bot_max // 2
+            large = bot_max - 2
+
+            if user_bet >= 5:
+                bot_bet += random.randint(0, small)
+            elif user_bet <= 4 and user_bet >= 2:
+                bot_bet += random.randint(small, med)
+            else:
+                bot_bet += random.randint(med, large)
+            
+            i[1] = i[1] - bot_bet
+
+            self.starting_bids_string = self.starting_bids_string + f"amount bet: ${bot_bet}, money left: $" + str(i[1]) + "\n"
             self.betting_money = self.betting_money + 1
         return self.starting_bids_string
 
@@ -206,16 +222,42 @@ class Game:
     def betting(self):
         self.string = ''
         for i in self.players:
-            self.string = self.string + ("player" + str(i[0]) + ": ")
+
+            bot_max = int(i[1])
+            
+            small = bot_max // 3
+            med = bot_max // 2
+            large = bot_max - 2
+
+            self.string = self.string + ("Player" + str(i[0]) + ": ")
             if i[2] >= 9:
-                self.string = self.string + ("folds\n")
+                self.string = self.string + ("folds.\n")
                 bots_money_left[i[0]] = i[1]
-            elif i[2] <= 8:
-                i[1] = i[1] - 1
-                self.betting_money = self.betting_money + 1
-                self.string = self.string + ("amount bet: 1$, ")
-                self.string = self.string + ("money left: " + str(i[1]) + "$\n")
+
+            elif i[2] <= 8 and i[2] >= 6:
+                small_bet = random.randint(1, small)
+                i[1] = i[1] - small_bet
+                self.betting_money = self.betting_money + small_bet
+                self.string = self.string + (f"amount bet: ${small_bet}, ")
+                self.string = self.string + ("money left: $" + str(i[1]) + "\n")
                 bots_money_left[i[0]] = i[1]
+
+            elif i[2] <= 5 and i[2] >= 3:
+                med_bet = random.randint(small, med)
+                i[1] -= med_bet
+                self.betting_money += med_bet
+                self.string += (f"amount bet: {med_bet}, ")
+                self.string += (f"money left: ${str(i[1])}\n")
+                bots_money_left[i[0]] = i[1]
+
+            else:
+                large_bet = random.randint(med, large)
+                i[1] -= large_bet
+                self.betting_money += large_bet
+                self.string += (f"amount bet: {large_bet}, ")
+                self.string += (f"money left: ${str(i[1])}\n")
+                bots_money_left[i[0]] = i[1]
+
         return self.string
 
     #this determines the rank for round 2
@@ -286,7 +328,7 @@ def folding_button(g, root, button_frame, numb, frame):
 
     game_summary = Label(frame, text = "Game Summary:")
     game_summary.grid(row=0, column=1)
-    starting_bids = Label(frame, bg="ghost white", text=g.starting_bids())
+    starting_bids = Label(frame, bg="ghost white", text=g.starting_bids(0))
     starting_bids.grid(row=1, column=0, padx=10)
     g.determine_rank_r1()
     round1_betting = Label(frame, bg= "ghost white", text="Round 1 Bids: \n\n" + g.betting())
@@ -377,7 +419,7 @@ def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, be
     fold_button = Button(button_frame, text="fold")
     fold_button.grid(row=2, column=0, ipady=20, ipadx=20)
 
-    bet_button = Button(button_frame, text="bet", command=lambda: betting_button2(g, root, card_frame))
+    bet_button = Button(button_frame, text="bet", command=lambda: betting_button(g, root, card_frame))
     bet_button.grid(row=2, column=1, ipady=20, ipadx=20)
 
 
@@ -394,7 +436,7 @@ def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, be
 def betting_button(g, button_frame, root):
     button_frame.destroy()
 
-    betting_label = Label(root,text="You currently have {}$ max to bet\ninsert the amount of money you would like to bet as a single integer, then press enter ".format(g.user[2]),padx=85, pady=4, bg="honeydew", fg="black")
+    betting_label = Label(root,text="You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(g.user[2]),padx=85, pady=4, bg="honeydew", fg="black")
     betting_label.pack()
 
     bet_amount = Entry(root, width=75, bg="ghost white", fg="black", borderwidth=1)
@@ -402,7 +444,8 @@ def betting_button(g, button_frame, root):
 
 
     bet_amount.insert(5, '')
-    bet_amount_button = Button(root, text="enter", fg="black", bg="black", pady=10, padx=10, command=lambda: bot_player_r1_choices('bet', g, button_frame, root, int(bet_amount.get()), bet_amount, betting_label, bet_amount_button))
+    bet_amount_button = Button(root, text="Enter", fg="black", bg="black", pady=10, padx=10, command=lambda: bot_player_r1_choices('bet', g, button_frame, root, int(bet_amount.get()), bet_amount, betting_label, bet_amount_button))
+    #bet_amount_button = Button(root, text="Enter", fg="black", bg="black", pady=10, padx=10, command= player_bet(bet_amount))
     bet_amount_button.pack(pady=20)
     pass
 
@@ -417,9 +460,11 @@ def bot_player_r1_choices(button_clicked, g, button_frame, root, bet_amount_numb
 
     g.user[1] = g.user[1] - bet_amount_numb
 
+    user_bid = Label(root, bg='ghost white', text= f"You bet ${bet_amount_numb}. You have ${g.user[1]} left.")
+    user_bid.pack()
 
     #Displays the starting bids of all the bot players
-    starting_bids = Label(root, bg = "ghost white", text = g.starting_bids())
+    starting_bids = Label(root, bg = "ghost white", text = g.starting_bids(bet_amount_numb))
     starting_bids.pack()
 
     if button_clicked == 'check': pass
@@ -462,8 +507,8 @@ def player_setup(root, numb, frame, button_frame, title1=None, player_amount=Non
     #adding an image into the spot
     global player_image
     global player_image2
-    player_image = resize_cards(f'final_project_ics33/card_deck/{g.user[3]}.png')
-    player_image2 = resize_cards(f'final_project_ics33/card_deck/{g.user[4]}.png')
+    player_image = resize_cards(f'{cwd}/card_deck/{g.user[3]}.png')
+    player_image2 = resize_cards(f'{cwd}/card_deck/{g.user[4]}.png')
     card_1.config(image=player_image)
     card_2.config(image=player_image2)
 
@@ -522,156 +567,6 @@ def start_gui(root=None):
     #needed to loop everything and keep it on the screen
     root.mainloop()
 
+
 start_gui()
 
-
-#Notes prior arg parse function
-'''
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-usermode1', "-u", action='store_true', help='game mode, stores True if user chooses user mode')
-    parser.add_argument('-filemode2', '-f', action='store_true', help='mode for the game, stores true if file mode')
-    parser.add_argument('-info', '-p', '-i', type=str or int, help="tells required information for game")
-    args = parser.parse_args()
-    umode, fmode, info = bool(args.usermode1), bool(args.filemode2), str(args.info)
-    if umode == True: mode = 'usermode'
-    else: mode = 'filemode'
-    return mode, info
-
-if __name__ == "__main__":
-    m = main()
-    if m[0] == 'usermode': usermode_game(int(m[1]))
-    if m[0] == 'filemode': file_mode(str(m[1]))
-'''
-
-#Notes prior UI function
-'''
-
-def usermode_game(player_num):
-
-    #sets up the game and stores the variables needed to be saved
-    #print("------------ Welcome to Texas Hold EM Poker ------------\n")
-
-    #if player_num <= 1: raise Exception("invalid input")
-    #money_left = {}
-    #loop = True
-
-    while loop:
-        #creates a new game
-        #g = Game(player_num)
-
-
-
-        #first round where everyone bets based solely on their cards
-        print("\n---------------- Initialization ----------------")
-        g.set_community_r1()
-        print("\nWelcome to the Game, you are Player 0\n")
-        print("Your Cards: " + str(g.user[3]) + ", " + str(g.user[4]))
-
-        #gives the user the option to check
-        decision = input("\nwould you like to check? input 'c' to check, press enter if you want to bet or fold instead: ")
-        if decision != 'c':
-            #if they choose not to directs them to the function that allows them to bet or fold
-            decision = user_decision(g)
-
-            if decision == False:
-                g.user.append('folded')
-            if decision == 'no money':
-                print("out of money, game over\n")
-                loop = False
-            else:
-                g.betting_money = g.betting_money + decision
-                g.user[1] = g.user[1] - decision
-                print("your money left: " + str(g.user[1]) + "$")
-
-        #The bot players now all bet 1$ based solely on their cards
-        print("\n-------- Round 0 --------")
-        for i in g.players:
-            print("player" + str(i[0]))
-            i[1] = i[1] - 1
-            print("amount bet: 1$")
-            print("money left: " + str(i[1]) + "$\n")
-            g.betting_money = g.betting_money + 1
-
-        #The function now displays the community cards
-        #the bots will bet or fold depending on their rank
-        #the user will bet or fold depending on their choice
-        print("\n------------------ Round 1 ------------------\n")
-        print("The Community Cards: " + str(g.c1) + ", " + str(g.c2) + ", " + str(g.c3))
-        if decision != False:
-            if decision != 'no money':
-                decision = user_decision(g)
-
-                if decision == False:
-                    g.user.append('folded')
-                elif decision == 'no money':
-                    print("out of money, game over")
-                    loop = False
-                else:
-                    g.betting_money = g.betting_money + decision
-                    g.user[1] = g.user[1] - decision
-                    print("your money left: " + str(g.user[1]) + "$")
-        g.determine_rank_r1()
-        g.betting()
-        for i in g.players:
-            print("player" + str(i[0]))
-            if i[2] >= 9:
-                print("folds\n")
-                money_left[i[0]] = i[1]
-            elif i[2] <= 8:
-                print("amount bet: 1$")
-                print("money left: " + str(i[1]) + "$\n")
-                money_left[i[0]] = i[1]
-        g.remove_fold()
-        # The function now displays the community cards along with the additional 2 community cards for round 2
-        # the bots will all bet since all of the remaining are all rank 8 or above at this point
-        # the user will bet or fold depending on their choice
-        print("\n-------------Round 2-------------")
-        g.set_community_r2()
-        g.determine_rank_r2()
-        g.betting()
-        print("community cards: " + str(g.c1) + ", " + str(g.c2) + ", " + str(g.c3) + ", " + str(g.c4) + ", " + str(g.c5) + "\n")
-        if decision != False:
-            if decision != 'no money':
-                decision = user_decision(g)
-
-                if decision == False:
-                    g.user.append('folded')
-                elif decision == 'no money':
-                    print("out of money, game over")
-                    print("your money left: " + str(g.user[1]))
-                    loop = False
-                else:
-                    g.betting_money = g.betting_money + decision
-                    g.user[1] = g.user[1] - decision
-                    print("your money left: " + str(g.user[1]) + "$\n")
-        for i in g.players:
-            print("player " + str(i[0]) + ":")
-            if i[2] <= 8:
-                print("amount bet: 1$")
-                print("money left: " + str(i[1]) + "$\n")
-                money_left[i[0]] = i[1]
-            if i[2] >= 9:
-                print("folds\n")
-                money_left[i[0]] = i[1]
-        #This displays the results
-        print ("\n-------------results-------------")
-        winner = g.determine_winner()
-        print("Winner: player " + str(winner))
-        for keys, values in money_left.items():
-            if keys == winner:
-                money_left[keys] = int(values) + g.betting_money
-        money_left[0] = g.user[1]
-        #for i in g.players:
-            #print("player" + str(i[0]) + ": $" + str(i[1]))
-        print("\nCurrent Currency of all Players (you are player 0)")
-        for keys, values in money_left.items():
-            print('player ' + str(keys) + ': $' + str(values))
-
-        #This choice determines if the loop will continue
-        #However if the user is out of money the loop will end regardless of the user's choice
-        continue_playing = input("\nwould you like to continue playing? input 'n' for no, or press enter/any key to continue: ")
-        if continue_playing == 'n': loop = False
-
-    print("\nGame(s) over, if you did not select 'n', you have run out of money and do not want to go into debt")
-'''
