@@ -190,12 +190,15 @@ class Game:
             med = int(bot_max / 2)
             large = bot_max - 2
 
-            if user_bet >= 5:
-                bot_bet += random.randint(0, small)
-            elif user_bet <= 4 and user_bet >= 2:
-                bot_bet += random.randint(small, med)
+            if i[1] > 1:
+                if user_bet >= 5:
+                    bot_bet += random.randint(0, small)
+                elif user_bet <= 4 and user_bet >= 2:
+                    bot_bet += random.randint(small, med)
+                else:
+                    bot_bet += random.randint(med, large)
             else:
-                bot_bet += random.randint(med, large)
+                bot_bet = 0
             
             i[1] = i[1] - bot_bet
 
@@ -231,33 +234,38 @@ class Game:
 
 
             self.string = self.string + ("Player" + str(i[0]) + ": ")
-            if i[2] >= 9:
-                self.string = self.string + ("folds.\n")
-                bots_money_left[i[0]] = i[1]
 
-            elif i[2] <= 8 and i[2] >= 6:
-                small_bet = random.randint(1, small)
-                i[1] = i[1] - small_bet
-                self.betting_money = self.betting_money + small_bet
-                self.string = self.string + (f"amount bet: ${small_bet}, ")
-                self.string = self.string + ("money left: $" + str(i[1]) + "\n")
-                bots_money_left[i[0]] = i[1]
+            if i[1] > 1:
+                if i[2] >= 9:
+                    self.string = self.string + ("folds.\n")
+                    bots_money_left[i[0]] = i[1]
 
-            elif i[2] <= 5 and i[2] >= 3:
-                med_bet = random.randint(small, med)
-                i[1] -= med_bet
-                self.betting_money += med_bet
-                self.string += (f"amount bet: {med_bet}, ")
-                self.string += (f"money left: ${str(i[1])}\n")
-                bots_money_left[i[0]] = i[1]
+                elif i[2] <= 8 and i[2] >= 6:
+                    small_bet = random.randint(1, small)
+                    i[1] = i[1] - small_bet
+                    self.betting_money = self.betting_money + small_bet
+                    self.string = self.string + (f"amount bet: ${small_bet}, ")
+                    self.string = self.string + ("money left: $" + str(i[1]) + "\n")
+                    bots_money_left[i[0]] = i[1]
+
+                elif i[2] <= 5 and i[2] >= 3:
+                    med_bet = random.randint(small, med)
+                    i[1] -= med_bet
+                    self.betting_money += med_bet
+                    self.string += (f"amount bet: {med_bet}, ")
+                    self.string += (f"money left: ${str(i[1])}\n")
+                    bots_money_left[i[0]] = i[1]
+
+                else:
+                    large_bet = random.randint(med, large)
+                    i[1] -= large_bet
+                    self.betting_money += large_bet
+                    self.string += (f"amount bet: {large_bet}, ")
+                    self.string += (f"money left: ${str(i[1])}\n")
+                    bots_money_left[i[0]] = i[1]
 
             else:
-                large_bet = random.randint(med, large)
-                i[1] -= large_bet
-                self.betting_money += large_bet
-                self.string += (f"amount bet: {large_bet}, ")
-                self.string += (f"money left: ${str(i[1])}\n")
-                bots_money_left[i[0]] = i[1]
+                self.string += ("folds.\n")
 
         return self.string
 
@@ -318,9 +326,19 @@ def end_gui(root):
 
 #in progress
 #function directed when folding button is clicked
-def folding_button(g, root, button_frame, numb, frame, init_bot_bets=None):
+def folding_button(g, root, button_frame, numb, frame, init_bot_bets=None, user_bets_label=None, bot_bets_label=None, cards=None):
     button_frame.destroy()
     frame.destroy()
+
+    if user_bets_label:
+        user_bets_label.destroy()
+
+    if bot_bets_label:
+        bot_bets_label.destroy()
+
+    if cards:
+        for card in cards:
+            card.destroy()
 
     g.user.append("folded")
 
@@ -354,13 +372,13 @@ def folding_button(g, root, button_frame, numb, frame, init_bot_bets=None):
     quit = Button(button_frame, text="quit", command=lambda: end_gui(root))
     quit.grid(row=1, column=2, ipady=20, ipadx=20)
 
-
+'''
 def bot_player_r3_choices():
     pass
 
 def bot_player_r2_choices():
     pass
-
+'''
 
 
 
@@ -380,11 +398,14 @@ def community_round_2(g, root, card_frame):
 
 #In progress
 #Function directed when checking button is pressed
-def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, betting_label=None, bet_amount_button=None):
+def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, betting_label=None, bet_amount_button=None, cards=None):
     button_frame.destroy()
 
     ##########
-    init_bot_bets = bot_player_r1_choices('check', g, None, root)
+    hehe = bot_player_r1_choices('check', g, None, root)
+    init_bot_bets = hehe[0]
+    user_label = hehe[1]
+    bot_label = hehe[2]
 
     if bet_amount: bet_amount.destroy()
     if bet_amount_button: bet_amount_button.destroy()
@@ -398,6 +419,7 @@ def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, be
     #creating a frame label
     user_rank_label = Label(root, text=f"Your rank is {g.user[2]}.")
     user_rank_label.pack()
+    cards.append(user_rank_label)
     card_frame = LabelFrame(frame, text=f"  The Round 1 Community Cards Are: ", bd=0)
     card_frame.grid(row=0, column=0, padx=10, ipadx=2)
 
@@ -426,7 +448,7 @@ def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, be
     button_frame = Frame(root, bg="white")
     button_frame.pack()
 
-    fold_button = Button(button_frame, text="fold", command=lambda: folding_button(g, root, button_frame, 0, frame, init_bot_bets))
+    fold_button = Button(button_frame, text="fold", command=lambda: folding_button(g, root, button_frame, 0, frame, init_bot_bets, user_bets_label=user_label, bot_bets_label=bot_label, cards=cards))
     fold_button.grid(row=2, column=0, ipady=20, ipadx=20)
 
     bet_button = Button(button_frame, text="bet", command=lambda: betting_button(g, root, card_frame))
@@ -443,44 +465,78 @@ def checking_button(g, button_frame, root, bet_amount_get=0, bet_amount=None, be
 
 
 
-def betting_button(g, button_frame, root):
-    button_frame.destroy()
+def betting_button(g, button_frame, root, betting_label=None, bet_amount=None, bet_amount_button=None, times_used=0):
+    times_used = times_used
 
-    betting_label = Label(root,text="You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(g.user[2]),padx=85, pady=4, bg="honeydew", fg="black")
-    betting_label.pack()
+    if times_used < 2:
+        button_frame.destroy()
 
-    bet_amount = Entry(root, width=75, bg="ghost white", fg="black", borderwidth=1)
-    bet_amount.pack()
+        if int(g.user[2]) > 0:
+            betting_label = Label(root,text="You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(g.user[2]),padx=85, pady=4, bg="honeydew", fg="black")
+            betting_label.pack()
+
+            bet_amount = Entry(root, width=75, bg="ghost white", fg="black", borderwidth=1)
+            bet_amount.pack()
+
+            button_frame = Frame(root, bg="white")
+            button_frame.pack()
+
+            bet_amount.insert(5, '')
+            bet_amount_button = Button(root, text="Enter", fg="black", bg="black", pady=10, padx=10, command=lambda: bot_player_r1_choices('bet', g, button_frame, root, int(bet_amount.get()), bet_amount, betting_label, bet_amount_button))
+            bet_amount_button.pack(pady=20)
+            pass
+        else:
+            end_gui(root)
+            print("You went broke!")
+
+    else:
+        button_frame = Frame(root, bg="white")
+        button_frame.pack()
+        frame = Frame(root)
+        folding_button(g, root, button_frame, 0, frame)
 
 
-    bet_amount.insert(5, '')
-    bet_amount_button = Button(root, text="Enter", fg="black", bg="black", pady=10, padx=10, command=lambda: bot_player_r1_choices('bet', g, button_frame, root, int(bet_amount.get()), bet_amount, betting_label, bet_amount_button))
-    bet_amount_button.pack(pady=20)
-    pass
 
-
-
-def bot_player_r1_choices(button_clicked, g, button_frame, root, bet_amount_numb=0, bet_amount=None, betting_label=None, bet_amount_button=None):
+def bot_player_r1_choices(button_clicked, g, button_frame, root, bet_amount_numb=0, bet_amount=None, betting_label=None, bet_amount_button=None, times_used=0):
     #getting rid of previous screen
-    if button_frame != None: button_frame.destroy()
-    if betting_label != None: betting_label.destroy()
-    if bet_amount != None: bet_amount.destroy()
-    if bet_amount_button != None: bet_amount_button.destroy()
+    times_used = times_used
+    if times_used < 2:
+        frame = Frame(root)
 
-    g.user[1] = g.user[1] - bet_amount_numb
+        if button_frame != None: button_frame.destroy()
+        if betting_label != None: betting_label.destroy()
+        if bet_amount != None: bet_amount.destroy()
+        if bet_amount_button != None: bet_amount_button.destroy()
 
-    user_bid = Label(root, bg='ghost white', text= f"You bet ${bet_amount_numb}. You have ${g.user[1]} left.")
-    user_bid.pack()
+        g.user[1] = g.user[1] - bet_amount_numb
 
-    #Displays the starting bids of all the bot players
-    starting_bids = Label(root, bg = "ghost white", text = g.starting_bids(bet_amount_numb))
-    starting_bids.pack()
+        user_bid = Label(root, bg='ghost white', text= f"You bet ${bet_amount_numb}. You have ${g.user[1]} left.")
+        user_bid.pack()
 
-    if button_clicked == 'check': pass
-    if button_clicked == 'bet': pass
-    if button_clicked == 'fold': pass
-    
-    return starting_bids.cget("text")
+        #Displays the starting bids of all the bot players
+        starting_bids = Label(root, bg = "ghost white", text = g.starting_bids(bet_amount_numb))
+        starting_bids.pack()
+
+        if button_clicked == 'check': pass
+        if button_clicked == 'bet': pass
+        if button_clicked == 'fold': pass
+
+        button_frame = Frame(root, bg="white")
+        button_frame.pack()
+
+        times_used += 1
+
+        fold_button = Button(button_frame, text="fold", command=lambda: folding_button(g, root, button_frame, bet_amount_numb, frame))
+        fold_button.grid(row=2, column=0, ipady=20, ipadx=20)
+
+        bet_button = Button(button_frame, text="bet", command=lambda: betting_button(g, button_frame, root, times_used=times_used))
+        bet_button.grid(row=2, column=1, ipady=20, ipadx=20)
+        
+        return (starting_bids.cget("text"), user_bid, starting_bids)
+
+    else:
+        frame = Frame(root)
+        folding_button(g, root, button_frame, bet_amount_numb, frame)
 
 
 def player_setup(root, numb, frame, button_frame, title1=None, player_amount=None, player_amount_button=None):
@@ -529,33 +585,12 @@ def player_setup(root, numb, frame, button_frame, title1=None, player_amount=Non
 
     #creating a check, fold, and bet, button that directs the player to different functions if clicked
     #check_button = Button(button_frame, text="check", command = lambda: bot_player_r1_choices('check', g, button_frame, root))
-    check_button = Button(button_frame, text="check", command = lambda: checking_button(g, button_frame, root))
+    check_button = Button(button_frame, text="check", command = lambda: checking_button(g, button_frame, root, cards=[card_1, card_2, playerframe, frame]))
     check_button.grid(row=3, column=0, ipady=20, ipadx=20)
-    fold_button = Button(button_frame, text="fold", command = lambda: folding_button(g, root, button_frame, numb, frame))
+    fold_button = Button(button_frame, text="fold", command = lambda: folding_button(g, root, button_frame, numb, frame, cards=[card_1, card_2]))
     fold_button.grid(row=3, column=3, ipady=20, ipadx=20)
     bet_button = Button(button_frame, text="bet", command =lambda: betting_button(g, button_frame, root))
     bet_button.grid(row=3, column=5, ipady=20, ipadx=20)
-
-'''
-    def next_button(g, button_frame, root):
-        #creating a label for the frame
-        playerframe = LabelFrame(frame, text="Your Cards Are: ", bd=0)
-        playerframe.grid(row=0, column=0, padx=10, ipadx=2)
-
-        #creating a spot for each of the player's card
-        card_1 = Label(playerframe, text='')
-        card_1.grid(row = 1, column = 0)
-        card_2 = Label(playerframe, text='')
-        card_2.grid(row = 1, column = 1)
-
-        #adding an image into the spot
-        global player_image
-        global player_image2
-        player_image = resize_cards(f'{cwd}/card_deck/{g.user[3]}.png')
-        player_image2 = resize_cards(f'{cwd}/card_deck/{g.user[4]}.png')
-        card_1.config(image=player_image)
-        card_2.config(image=player_image2)
-'''
 
 
 #This checks the users player amount input
