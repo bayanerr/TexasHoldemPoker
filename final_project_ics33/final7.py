@@ -483,26 +483,29 @@ class gui:
         bb.grid(row=3, column=5, ipady=20, ipadx=20)
 
     def round_two(self):
-        #self.button_frame = Frame()
-        # fb = Button(button_frame, text="fold", command=lambda: self.folding_button_command())
-        # bb = Button(button_frame, text="bet", command=lambda: self.betting_button_command())
-        # fb.grid(row=3, column=3, ipady=20, ipadx=20)
-        # bb.grid(row=3, column=5, ipady=20, ipadx=20)
-        #self.button_frame_function()
-        pass
+        if self.round <= 3:
+            self.round += 1
+            self.bet_amount.forget()
+            self.bet_amount_button.forget()
+            self.button_frame_function('no')
+            self.betting_button.pack()
+            self.folding_button.pack()
+        else:
+            self.folding_button_command()
+
 
     def checking_button_command(self):
         self._destroy_move_buttons()
-        self.round += 1
         self._bot_decisions()
-        #self.round_two()
-        self.button_frame_function('no')
+        self.round_two()
         pass
 
 
     def folding_button_command(self):
         self._destroy_move_buttons()
         self.user_card_frame.forget()
+        #self.user_bid_label.forget()
+        #self.bots_bid_label.forget()
 
         self.summary_frame = Frame(self.root, bg="white")
         self.summary_frame.pack(pady=10)
@@ -545,7 +548,11 @@ class gui:
                 self.g.user[2])
             self.betting_label.pack()
 
-            self.bet_amount.pack()
+            if self.round < 2:
+                self.bet_amount.pack()
+            else:
+                self.bet_amount = Entry(self.root, width=75, bg="ghost white", fg="black", borderwidth=1)
+                self.bet_amount.pack()
 
             self.bet_amount.insert(5, '')
 
@@ -553,6 +560,7 @@ class gui:
 
             if self.round > 1:
                 self._show_ccs()
+                self.round_two()
 
 
 
@@ -579,8 +587,16 @@ class gui:
         #self.bot_bids_label["text"] = f"{self.g.betting()}"
         #self.bot_bids_label.pack()
 
-        if self.round in (1, 2, 3):
+        #self.betting_label.forget
+        #self.bet_amount.forget
+
+        #if self.round in (1, 2):
+        if self.round == 1:
+            self.betting_label.forget()
+            self.bet_amount.destroy()
+            self.bet_amount_button.forget()
             self._show_ccs()
+            self.round_two()
 
         
 
