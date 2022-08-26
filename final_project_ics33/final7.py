@@ -359,6 +359,9 @@ class gui:
         self.bet_amount = Entry(self.root, width=75, bg="ghost white", fg="black", borderwidth=1)
         self.bet_amount_button = Button(self.root, text="Enter", fg="black", bg="black", pady=10, padx=10,
                                         command=lambda: self._bot_decisions())
+
+
+        self.round = 0
         #self.root.mainloop()
         if bot_amount == None:
             self.start_gui()
@@ -490,6 +493,7 @@ class gui:
 
     def checking_button_command(self):
         self._destroy_move_buttons()
+        self.round += 1
         self._bot_decisions()
         #self.round_two()
         self.button_frame_function('no')
@@ -526,13 +530,14 @@ class gui:
         self.continue_playing = Button(self.cp_button_frame, text="continue\nplaying",
                                   command= lambda: start_gui(num))
         self.continue_playing.grid(row=1, column=0, ipady=12, ipadx=10)
-        self.quit = Button(self.cp_button_frame, text="quit", command=lambda: self.end_gui(self.root))
+        self.quit = Button(self.cp_button_frame, text="quit", command=lambda: self.end_gui())
         self.quit.grid(row=1, column=2, ipady=20, ipadx=20)
 
 
 
     def betting_button_command(self):
         self._destroy_move_buttons()
+        self.round += 1
 
         if int(self.g.user[2]) > 0:
             self.betting_label[
@@ -545,6 +550,9 @@ class gui:
             self.bet_amount.insert(5, '')
 
             self.bet_amount_button.pack(pady=20)
+
+            if self.round > 1:
+                self._show_ccs()
 
 
 
@@ -571,6 +579,11 @@ class gui:
         #self.bot_bids_label["text"] = f"{self.g.betting()}"
         #self.bot_bids_label.pack()
 
+        if self.round in (1, 2, 3):
+            self._show_ccs()
+
+        
+
 
     def end_gui(self):
         self.root.destroy()
@@ -588,6 +601,43 @@ class gui:
 
         for button in buttons:
             button.forget()
+    
+    def _show_ccs(self):
+        if self.round == 1:
+            self.cc_card_frame = Frame(self.root, bg="ghost white")
+            self.cc_card_frame.pack(pady=10)
+
+            # creating a label for the frame
+            self.cc_card_label = LabelFrame(self.cc_card_frame, text="The Community Cards Are: ", bd=0)
+            self.cc_card_label.grid(row=0, column=0, padx=10, ipadx=2)
+
+            # creating a spot for each of the player's card
+            self.cc_1 = Label(self.cc_card_label, text='')
+            self.cc_1.grid(row=1, column=0)
+            self.cc_2 = Label(self.cc_card_label, text='')
+            self.cc_2.grid(row=1, column=1)
+            self.cc_3 = Label(self.cc_card_label, text='')
+            self.cc_3.grid(row=1, column=2)
+
+            # implementing card images
+            self.cc_1_image = resize_cards(f'{cwd}/card_deck/{self.g.c1}.png')
+            self.cc_2_image = resize_cards(f'{cwd}/card_deck/{self.g.c2}.png')
+            self.cc_3_image = resize_cards(f'{cwd}/card_deck/{self.g.c3}.png')
+            self.cc_1.config(image=self.cc_1_image)
+            self.cc_2.config(image=self.cc_2_image)
+            self.cc_3.config(image=self.cc_3_image)
+        
+        if self.round > 1:
+            self.cc_4 = Label(self.cc_card_label, text='')
+            self.cc_4.grid(row=2, column=0)
+            self.cc_5 = Label(self.cc_card_label, text='')
+            self.cc_5.grid(row=2, column=1)
+
+            self.cc_4_image = resize_cards(f'{cwd}/card_deck/{self.g.c4}.png')
+            self.cc_5_image = resize_cards(f'{cwd}/card_deck/{self.g.c5}.png')
+            self.cc_4.config(image=self.cc_4_image)
+            self.cc_5.config(image=self.cc_5_image)
+
 
     def _destroy_buttons_after_betting(self):
         #self.betting_label.destroy()
