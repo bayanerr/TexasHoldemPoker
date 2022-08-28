@@ -356,13 +356,13 @@ class Game:
                 if i[2] in l:
                     if highest_card(i[3:]) > 0:
                         x = highest_card(i[3:])
-            i[1] = i[1] + self.betting_money
+            i[1] += self.betting_money
             bots_money_left[i[0] + 1] += i[1]
             return i[0]
         else:
             for i in self.players:
                 if i[2] == l[0]:
-                    i[1] = i[1] + self.betting_money
+                    i[1] += self.betting_money
                     bots_money_left[i[0]] += i[1]
                     return i[0]
     def results(self):
@@ -490,8 +490,10 @@ class gui:
         bb.grid(row=3, column=5, ipady=20, ipadx=20)
 
     def round_two(self):
-        if self.round <= 6:
+        if self.round != 7 and self.round != 8.5:
             self.round += 1
+            self.betting_button.forget()
+            self.folding_button.forget()
             self.button_frame_function('no')
             self.betting_button.pack()
             self.folding_button.pack()
@@ -499,8 +501,10 @@ class gui:
             self.folding_button_command()
 
     def checking_button_command(self):
+        self.round += 1.5
         self._destroy_move_buttons()
         self._bot_decisions()
+        self._show_ccs()
         self.round_two()
         pass
 
@@ -510,14 +514,11 @@ class gui:
         self.summary_frame = Frame(self.root, bg="white")
         self.summary_frame.pack(pady=10)
 
+        self.info_frame.forget()
+
         self.game_summary = Label(self.summary_frame, text="Game Summary:")
         self.game_summary.grid(row=0, column=1)
-        # if init_bot_bets:
-        # starting_bids = Label(frame, bg="ghost white", text=init_bot_bets)
-        # starting_bids.grid(row=1, column=0, padx=10)
-        # else:
-        # starting_bids = Label(frame, bg="ghost white", text=g.starting_bids(0))
-        # starting_bids.grid(row=1, column=0, padx=10)
+
         self.g.determine_rank_r1()
         self.round1_betting = Label(self.summary_frame, bg="ghost white", text="Round 1 Bids: \n\n" + self.g.betting())
         self.round1_betting.grid(row=1, column=1, padx=10)
@@ -557,6 +558,7 @@ class gui:
             self.bet_amount.insert(5, '')
             self.bet_amount_button.pack(pady=20)
             if self.round > 1:
+                self.info_frame.forget()
                 self.betting_label[
                     "text"] = "You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(
                     self.g.user[2])
@@ -595,7 +597,7 @@ class gui:
         # self.bet_amount.forget
 
         # if self.round in (1, 2):
-        if self.round >= 1:
+        if self.round == 1 or self.round >= 1.5:
             self.betting_label.forget()
             self.bet_amount.forget()
             self.bet_amount_button.forget()
@@ -618,7 +620,7 @@ class gui:
 
     def _show_ccs(self):
 
-        if self.round == 1:
+        if self.round in (0, 1, 1.5):
             self.cc_card_frame = Frame(self.root, bg="ghost white")
             self.cc_card_frame.pack(pady=10)
             # creating a label for the frame
@@ -640,41 +642,37 @@ class gui:
             self.cc_2.config(image=self.cc_2_image)
             self.cc_3.config(image=self.cc_3_image)
 
-        if self.round > 1:
-            self.cc_card_frame.forget()
-            self.cc_card_frame.pack(pady=10)
-            #self.cc_card_frame = Frame(self.root, bg="ghost white")
-            #self.cc_card_frame.pack(pady=10)
+        if self.round > 2.5:
+            try:
+                self.cc_card_frame.forget()
+                self.cc_card_frame.pack(pady=10)
 
-            # creating a label for the frame
-            #self.cc_card_label = LabelFrame(self.cc_card_frame, text="The Community Cards Are: ", bd=0)
-            #self.cc_card_label.grid(row=0, column=0, padx=10, ipadx=2)
+                self.cc_1 = Label(self.cc_card_label, text='')
+                self.cc_1.grid(row=1, column=0)
+                self.cc_2 = Label(self.cc_card_label, text='')
+                self.cc_2.grid(row=1, column=1)
+                self.cc_3 = Label(self.cc_card_label, text='')
+                self.cc_3.grid(row=1, column=2)
 
-            #self._destroy_buttons_after_betting()
-            self.cc_1 = Label(self.cc_card_label, text='')
-            self.cc_1.grid(row=1, column=0)
-            self.cc_2 = Label(self.cc_card_label, text='')
-            self.cc_2.grid(row=1, column=1)
-            self.cc_3 = Label(self.cc_card_label, text='')
-            self.cc_3.grid(row=1, column=2)
+                # implementing card images
+                self.cc_1_image = resize_cards(f'{cwd}/card_deck/{self.g.c1}.png')
+                self.cc_2_image = resize_cards(f'{cwd}/card_deck/{self.g.c2}.png')
+                self.cc_3_image = resize_cards(f'{cwd}/card_deck/{self.g.c3}.png')
+                self.cc_1.config(image=self.cc_1_image)
+                self.cc_2.config(image=self.cc_2_image)
+                self.cc_3.config(image=self.cc_3_image)
 
-            # implementing card images
-            self.cc_1_image = resize_cards(f'{cwd}/card_deck/{self.g.c1}.png')
-            self.cc_2_image = resize_cards(f'{cwd}/card_deck/{self.g.c2}.png')
-            self.cc_3_image = resize_cards(f'{cwd}/card_deck/{self.g.c3}.png')
-            self.cc_1.config(image=self.cc_1_image)
-            self.cc_2.config(image=self.cc_2_image)
-            self.cc_3.config(image=self.cc_3_image)
+                self.cc_4 = Label(self.cc_card_label, text='')
+                self.cc_4.grid(row=1, column=3)
+                self.cc_5 = Label(self.cc_card_label, text='')
+                self.cc_5.grid(row=1, column=4)
 
-            self.cc_4 = Label(self.cc_card_label, text='')
-            self.cc_4.grid(row=1, column=3)
-            self.cc_5 = Label(self.cc_card_label, text='')
-            self.cc_5.grid(row=1, column=4)
-
-            self.cc_4_image = resize_cards(f'{cwd}/card_deck/{self.g.c4}.png')
-            self.cc_5_image = resize_cards(f'{cwd}/card_deck/{self.g.c5}.png')
-            self.cc_4.config(image=self.cc_4_image)
-            self.cc_5.config(image=self.cc_5_image)
+                self.cc_4_image = resize_cards(f'{cwd}/card_deck/{self.g.c4}.png')
+                self.cc_5_image = resize_cards(f'{cwd}/card_deck/{self.g.c5}.png')
+                self.cc_4.config(image=self.cc_4_image)
+                self.cc_5.config(image=self.cc_5_image)
+            except AttributeError:
+                self.folding_button_command()
 
 
     def end_gui(self):
@@ -689,6 +687,7 @@ def start_gui(num=None, roots=None):
     else: game = None
     g = gui()
     g.start_gui(game, num)
+    g.round = 0
     g.root.mainloop()
     # gui.start_gui()
 
