@@ -514,7 +514,10 @@ class gui:
         self.summary_frame = Frame(self.root, bg="white")
         self.summary_frame.pack(pady=10)
 
-        self.info_frame.forget()
+        try:
+            self.info_frame.forget()
+        except AttributeError:
+            pass
 
         self.game_summary = Label(self.summary_frame, text="Game Summary:")
         self.game_summary.grid(row=0, column=1)
