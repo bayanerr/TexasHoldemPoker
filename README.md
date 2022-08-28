@@ -5,7 +5,7 @@
 ### Student ID: 86148723
 ## Texas Hold'em
 
-PA3 is a construction of an interactive Python game of Texas Hold'em, one of the most popular poker games worldwide. A user who understands its interface should be able to play the game with up to 10 "bot" players. You are able to interact with the program by running it in a Python environment. This should display a Tkintr window that will provide instructions.
+The final project is a construction of an interactive Python game of Texas Hold'em, one of the most popular poker games worldwide. A user who understands its interface should be able to play the game with up to 10 "bot" players. You are able to interact with the program by running it in a Python environment. This should display a Tkintr window that will provide instructions.
  
 
 ## Build Status
