@@ -206,12 +206,13 @@ class Game:
 
     def starting_bids(self, user_bet):
         self.starting_bids_string = 'Computer Player Initial Bids:\n\n'
-        for i in self.players:
+        self.players_copy2 = self.players
+        self.players = []
+        for i in self.players_copy2:
             self.starting_bids_string = self.starting_bids_string + "Player " + str(i[0]) + ": "
 
             bot_bet = 1
             bot_max = int(i[1])
-
             small = int(bot_max / 3)
             med = int(bot_max / 2)
             large = bot_max - 2
@@ -223,10 +224,18 @@ class Game:
                     bot_bet += random.randint(small, med)
                 else:
                     bot_bet += random.randint(med, large)
+                i[1] = i[1] - bot_bet
+                self.betting_money = self.betting_money + bot_bet
+                self.players.append(i)
+            elif i[1] == 0:
+                pass
             else:
                 bot_bet = 0
+                i[1] = i[1] - bot_bet
+                self.players.append(i)
 
-            i[1] = i[1] - bot_bet
+
+
 
             self.starting_bids_string = self.starting_bids_string + f"amount bet: ${bot_bet}, money left: $" + str(
                 i[1]) + "\n"
@@ -261,23 +270,28 @@ class Game:
     # This also stores a string of whether the players bet or fold and how much they bet for the gui
     def betting(self):
         self.string = ''
-        for i in self.players:
-
+        self.players_copy = self.players
+        self.players = []
+        for i in self.players_copy:
             bot_max = int(i[1])
-
-            small = int(bot_max / 3) + 1
+            small = int(bot_max / 3)
             med = int(bot_max / 2)
             large = bot_max - 1
-
             self.string = self.string + ("Player" + str(i[0]) + ": ")
+            if i[2] == 10:
+                self.string += "folds.\n"
+            if i[1] == 0:
+                self.string += "out of money, out of game.\n"
+            elif i[2] <= 7 and i[2] >= 3:
 
-            if i[2] <= 7 and i[2] >= 3:
                 med_bet = random.randint(small, med)
+
                 i[1] -= med_bet
                 self.betting_money += med_bet
                 self.string += (f"amount bet: ${med_bet}, ")
                 self.string += (f"money left: ${str(i[1])}\n")
                 bots_money_left[i[0]] = i[1]
+                self.players.append(i)
 
             elif i[2] <= 2:
                 large_bet = random.randint(med, large)
@@ -286,17 +300,22 @@ class Game:
                 self.string += (f"amount bet: ${large_bet}, ")
                 self.string += (f"money left: ${str(i[1])}\n")
                 bots_money_left[i[0]] = i[1]
+                self.players.append(i)
 
-            elif i[2] == 10:
-                self.string += "folds.\n"
+
 
             else:
-                small_bet = random.randint(1, small)
+                try:
+                    small_bet = random.randint(1, small)
+                except:
+                    small_bet = 1
+
                 i[1] = i[1] - small_bet
                 self.betting_money = self.betting_money + small_bet
                 self.string = self.string + (f"amount bet: ${small_bet}, ")
                 self.string = self.string + ("money left: $" + str(i[1]) + "\n")
                 bots_money_left[i[0]] = i[1]
+                self.players.append(i)
 
         return self.string
 
@@ -368,8 +387,6 @@ class gui:
 
     def start_gui(self, game, num=None):
         self.num = num
-
-
         if num == None:
             # giving info about what to do with following entry space
             self.player_amount_prompt = Label(self.root,
@@ -392,11 +409,7 @@ class gui:
             #self.g.distribute_cards(self.num)
             self.g = Game(self.num)
             self.player_setup(self.num)
-        # needed to loop everything and keep it on the screen
 
-        # self.button_frame_function()
-
-        # self.root.mainloop()
 
     def button_frame_function(self, checking=None):
 
@@ -409,28 +422,28 @@ class gui:
         self.betting_button = Button(self.button_frame, text="bet", command=lambda: self.betting_button_command())
         self.betting_label = Label(self.root, padx=85, pady=4, bg="honeydew", fg="black")
 
+
     def check_num_players(self, num, destroy=None):
         self.num = num
         if num >= 1 and num <= 10:
             if destroy != None:
                 #self.g.distribute_cards(self.num)
                 self.g = Game(self.num)
-                self.player_setup(num, 'destroy')
-
-            else:
                 self.player_setup(num)
+            else:
+                self.player_setup(num, 'destroy')
 
     def player_setup(self, num, destroy=None):
         self.num = num
-        if destroy != None:
+        if destroy == 'destroy':
             self.player_amount_prompt.destroy()
             self.player_amount_entry.destroy()
             self.player_amount_button.destroy()
-            self.user_card_frame.destroy()
-            self.button_frame.forget()
-            self.summary_frame.destroy()
-            self.cp_button_frame.destroy()
-            self.user_card_frame.destroy()
+            #self.user_card_frame.destroy()
+            #self.button_frame.forget()
+            #self.summary_frame.destroy()
+            #self.cp_button_frame.destroy()
+            #self.user_card_frame.destroy()
         self.g = Game(num)
         if self.g.user[1] <= 0:
             print("You went BROKE!\nGAME OVER")
@@ -471,8 +484,8 @@ class gui:
     def round_two(self):
         if self.round <= 3:
             self.round += 1
-            self.bet_amount.forget()
-            self.bet_amount_button.forget()
+            #self.bet_amount.forget()
+            #self.bet_amount_button.forget()
             self.button_frame_function('no')
             self.betting_button.pack()
             self.folding_button.pack()
@@ -521,13 +534,11 @@ class gui:
     def betting_button_command(self):
         self._destroy_move_buttons()
         self.round += 1
-
         if int(self.g.user[2]) > 0:
             self.betting_label[
                 "text"] = "You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(
                 self.g.user[2])
             self.betting_label.pack()
-
             if self.round < 2:
                 self.bet_amount.pack()
             else:
@@ -535,26 +546,29 @@ class gui:
                 self.bet_amount.pack()
 
             self.bet_amount.insert(5, '')
-
             self.bet_amount_button.pack(pady=20)
-
             if self.round > 1:
-                self._show_ccs()
+                self.betting_label[
+                    "text"] = "You currently have ${} max to bet!\nInsert the amount of money you would like to bet as a single integer, then press enter. ".format(
+                    self.g.user[2])
+                #self.betting_label.forget()
+                #self._show_ccs()
                 self.round_two()
-
-
-
         else:
             self.end_gui()
             print('You went BROKE!\nGAME OVER')
+    def _destroy_buttons_after_betting(self):
+        self.betting_label.forget()
+        self.bet_amount.forget()
+        self.bet_amount_button.forget()
+        pass
 
     def _bot_decisions(self):
         if self.bet_amount.get().isnumeric():
             self.user_bet_amount = int(self.bet_amount.get())
         else:
             self.user_bet_amount = 0
-        self._destroy_buttons_after_betting()
-
+        #self._destroy_buttons_after_betting()
         # can use self.user_bet_amount now
         self.info_frame = Frame()
         self.info_frame.pack()
@@ -574,14 +588,10 @@ class gui:
         # if self.round in (1, 2):
         if self.round == 1:
             self.betting_label.forget()
-            self.bet_amount.destroy()
+            self.bet_amount.forget()
             self.bet_amount_button.forget()
             self._show_ccs()
             self.round_two()
-
-    def end_gui(self):
-
-        self.root.destroy()
 
     def _append_move(self, move):
         self.moves.append(move)
@@ -598,14 +608,13 @@ class gui:
             button.forget()
 
     def _show_ccs(self):
+
         if self.round == 1:
             self.cc_card_frame = Frame(self.root, bg="ghost white")
             self.cc_card_frame.pack(pady=10)
-
             # creating a label for the frame
             self.cc_card_label = LabelFrame(self.cc_card_frame, text="The Community Cards Are: ", bd=0)
             self.cc_card_label.grid(row=0, column=0, padx=10, ipadx=2)
-
             # creating a spot for each of the player's card
             self.cc_1 = Label(self.cc_card_label, text='')
             self.cc_1.grid(row=1, column=0)
@@ -623,23 +632,47 @@ class gui:
             self.cc_3.config(image=self.cc_3_image)
 
         if self.round > 1:
+            self.cc_card_frame.forget()
+            self.cc_card_frame.pack(pady=10)
+            #self.cc_card_frame = Frame(self.root, bg="ghost white")
+            #self.cc_card_frame.pack(pady=10)
+
+            # creating a label for the frame
+            #self.cc_card_label = LabelFrame(self.cc_card_frame, text="The Community Cards Are: ", bd=0)
+            #self.cc_card_label.grid(row=0, column=0, padx=10, ipadx=2)
+
+            #self._destroy_buttons_after_betting()
+            self.cc_1 = Label(self.cc_card_label, text='')
+            self.cc_1.grid(row=1, column=0)
+            self.cc_2 = Label(self.cc_card_label, text='')
+            self.cc_2.grid(row=1, column=1)
+            self.cc_3 = Label(self.cc_card_label, text='')
+            self.cc_3.grid(row=1, column=2)
+
+            # implementing card images
+            self.cc_1_image = resize_cards(f'{cwd}/card_deck/{self.g.c1}.png')
+            self.cc_2_image = resize_cards(f'{cwd}/card_deck/{self.g.c2}.png')
+            self.cc_3_image = resize_cards(f'{cwd}/card_deck/{self.g.c3}.png')
+            self.cc_1.config(image=self.cc_1_image)
+            self.cc_2.config(image=self.cc_2_image)
+            self.cc_3.config(image=self.cc_3_image)
+
             self.cc_4 = Label(self.cc_card_label, text='')
-            self.cc_4.grid(row=2, column=0)
+            self.cc_4.grid(row=1, column=3)
             self.cc_5 = Label(self.cc_card_label, text='')
-            self.cc_5.grid(row=2, column=1)
+            self.cc_5.grid(row=1, column=4)
 
             self.cc_4_image = resize_cards(f'{cwd}/card_deck/{self.g.c4}.png')
             self.cc_5_image = resize_cards(f'{cwd}/card_deck/{self.g.c5}.png')
             self.cc_4.config(image=self.cc_4_image)
             self.cc_5.config(image=self.cc_5_image)
 
-    def _destroy_buttons_after_betting(self):
-        # self.betting_label.destroy()
-        # self.bet_amount.destroy()
-        # self.bet_amount_button.destroy()
-        pass
+
+    def end_gui(self):
+        self.root.destroy()
 
 
+#starts the gui and resets when the player wants to continue playing
 def start_gui(num=None, roots=None):
     if roots:
         roots.destroy()
