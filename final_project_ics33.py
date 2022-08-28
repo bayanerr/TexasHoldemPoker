@@ -12,7 +12,7 @@ from os import getcwd
 
 bots_money_left = {}
 global players_money_left
-players_money_left = int
+
 
 cwd = getcwd()
 
@@ -174,7 +174,9 @@ class Game:
     # It initializes through the player amount. In the initialization,
     # variables like the players and their individual 2 cards
     # and the deck of cards are also created
-    def __init__(self, player_amount):
+    def __init__(self, player_amount, money=None):
+        if money==None: self.player_money = 10
+        else: self.player_money = money
         self.player_amount = player_amount
         self.players = []
         self.cards = generate_cards()
@@ -185,7 +187,7 @@ class Game:
         self.c3 = random.choice(self.cards)
         self.c4 = random.choice(self.cards)
         self.c5 = random.choice(self.cards)
-        self.user = [0, 10, self.rank, random.choice(self.cards), random.choice(self.cards), self.c1, self.c2, self.c3,
+        self.user = [0, self.player_money, self.rank, random.choice(self.cards), random.choice(self.cards), self.c1, self.c2, self.c3,
                      self.c4, self.c5]
 
         for i in range(self.player_amount):
@@ -202,9 +204,7 @@ class Game:
                         if values > 0:
                             i[1] = values
                             self.players.append(i)
-        # goes through the global value and adjusts the users money from previous games if needed
-        if players_money_left != int:
-            self.user[1] = players_money_left
+
 
     def starting_bids(self, user_bet):
         self.starting_bids_string = 'Computer Player Initial Bids:\n\n'
@@ -355,16 +355,20 @@ class Game:
                 if i[2] in l:
                     if highest_card(i[3:]) > 0:
                         x = highest_card(i[3:])
-            i[1] += self.betting_money
-            bots_money_left[i[0] + 1] += i[1]
-            if i[0] == 0: players_money_left += i[1]
+            #i[1] += self.betting_money
+            #bots_money_left[i[0] + 1] += i[1]
+            if i[0] == 0:
+                self.user[1] += self.betting_money
+            else:
+                bots_money_left[i[0]] += i[1]
+                i[1] += self.betting_money
             return i[0]
         else:
             for i in self.players:
                 if i[2] == l[0]:
-                    i[1] += self.betting_money
+                    if i[0] == 0: self.user[1] += self.betting_money
+                    else: i[1] += self.betting_money
                     bots_money_left[i[0]] += i[1]
-                    if i[0] == 0: players_money_left += i[1]
                     return i[0]
     def results(self):
         ss = str(self.determine_winner())
@@ -393,7 +397,7 @@ class gui:
         self.bet_amount_button = Button(self.root, text="Enter", fg="black", bg="black", pady=10, padx=10,
                                         command=lambda: self._bot_decisions())
         self.round = 0
-        self.players_money_left = players_money_left
+
 
 
     def start_gui(self, game, num=None):
@@ -529,10 +533,10 @@ class gui:
         self.cp_button_frame = Frame(self.root, bg="white")
         self.cp_button_frame.pack(pady=50)
         num = self.num
-        self.g.__init__(self.num)
+        self.g.__init__(self.num, self.g.user[1])
         # creating a check, fold, and bet, button that directs the player to different functions if clicked
         self.continue_playing = Button(self.cp_button_frame, text="continue\nplaying",
-                                       command=lambda: start_gui(num, self.root))
+                                       command=lambda: start_gui(num, self.root, self.g.user[1]))
         self.continue_playing.grid(row=1, column=0, ipady=12, ipadx=10)
         self.quit = Button(self.cp_button_frame, text="quit", command=lambda: self.end_gui())
         self.quit.grid(row=1, column=2, ipady=20, ipadx=20)
@@ -667,11 +671,12 @@ class gui:
 
 
 #starts the gui and resets when the player wants to continue playing
-def start_gui(num=None, roots=None):
+def start_gui(num=None, roots=None, player_money=None):
     if roots:
         roots.destroy()
-        game = Game(num)
-    else: game = None
+        game = Game(num, player_money)
+    else:
+        game = None
     g = gui()
     g.start_gui(game, num)
     g.round = 0
