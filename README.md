@@ -22,7 +22,7 @@ We used Visual Studio Code and my Macbook's Terminal to edit and test this code,
 
 ## Installation
 
-Install my program from [UCI Canvas](https://canvas.eee.uci.edu/)! Texas Hold'em uses Python modules *random*, *itertools*, *argparse*, *csv*, *pathlib*, *tkinter*, *PIL*, *os*, and *sys* in its operations. A subdirectory of card image files should be in the *same directory* as the Texas Hold'em program file itself.
+Install our .zip file from [UCI Canvas](https://canvas.eee.uci.edu/)! Texas Hold'em uses Python modules *random*, *itertools*, *argparse*, *csv*, *pathlib*, *tkinter*, *PIL*, *os*, and *sys* in its operations. A subdirectory of card image files should be in the *same directory* as the Texas Hold'em program file itself.
 
 ### *Important*
 In order to run Texas Hold'em, you must install the third-party library PIL, or Pillow. We recommend using [pip](https://pip.pypa.io/en/stable/installation/) to access PIL via command line. If you are working in a virtual environment, pip should be installed by default. In order to install PIL from command line, simply type:
