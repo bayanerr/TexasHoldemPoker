@@ -154,7 +154,7 @@ def highest_card(cards):
     for i in x:
         if i == 1:
             return i
-    return max(x)
+    return int(max(x))
 
 
 # this function generates the deck of cards
@@ -357,7 +357,7 @@ class Game:
                     if highest_card(i[3:]) > 0:
                         x = highest_card(i[3:])
             i[1] = i[1] + self.betting_money
-            bots_money_left[i[0]] += i[1]
+            bots_money_left[i[0] + 1] += i[1]
             return i[0]
         else:
             for i in self.players:
@@ -366,9 +366,14 @@ class Game:
                     bots_money_left[i[0]] += i[1]
                     return i[0]
     def results(self):
+        ss = str(self.determine_winner())
+        if 0 or "0" in list(ss):
+            ss == "YOU!"
+        else:
+            ss == f"Player {ss}"
         self.results_string = ''
-        self.results_string += "The winner of this round is: player "
-        self.results_string += str(self.determine_winner()) + "\n"
+        self.results_string += "The winner of this round is: "
+        self.results_string += f"{ss}" + "\n"
         self.results_string += "Final Player Standings\n"
         for i in self.players:
             if i[0] == 0: self.results_string += ("You, money left: " + str(i[1]) + "$\n")
@@ -380,7 +385,7 @@ class gui:
     def __init__(self):
         self.root = Tk()
         self.root.title("Welcome to Texas Hold'em!")
-        self.root.geometry("1000x700")
+        self.root.geometry("1000x1500")
         self.root.configure(background="honeydew")
         self.bet_amount = Entry(self.root, width=75, bg="ghost white", fg="black", borderwidth=1)
         self.bet_amount_button = Button(self.root, text="Enter", fg="black", bg="black", pady=10, padx=10,
@@ -485,10 +490,8 @@ class gui:
         bb.grid(row=3, column=5, ipady=20, ipadx=20)
 
     def round_two(self):
-        if self.round <= 3:
+        if self.round <= 6:
             self.round += 1
-            #self.bet_amount.forget()
-            #self.bet_amount_button.forget()
             self.button_frame_function('no')
             self.betting_button.pack()
             self.folding_button.pack()
@@ -592,7 +595,7 @@ class gui:
         # self.bet_amount.forget
 
         # if self.round in (1, 2):
-        if self.round == 1:
+        if self.round >= 1:
             self.betting_label.forget()
             self.bet_amount.forget()
             self.bet_amount_button.forget()
